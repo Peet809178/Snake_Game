@@ -52,16 +52,16 @@ def change_direction(e): #event
     if (game_over):
         return
 
-    if (e.keysym == "Up" and velocityY != 1):
+    if (e.keysym == "Up" or e.keysym == "w") and velocityY != 1:
         velocityX = 0
         velocityY = -1
-    elif (e.keysym == "Down" and velocityY != -1):
+    elif (e.keysym == "Down" or e.keysym == "s") and velocityY != -1:
         velocityX = 0
         velocityY = 1
-    elif (e.keysym == "Left" and velocityX != 1):
+    elif (e.keysym == "Left" or e.keysym == "a") and velocityX != 1:
         velocityX = -1
         velocityY = 0
-    elif (e.keysym == "Right"and velocityX != -1):
+    elif (e.keysym == "Right" or e.keysym == "d") and velocityX != -1:
         velocityX = 1
         velocityY = 0
 
@@ -125,5 +125,5 @@ def draw():
 
 draw()
 
-window.bind("<KeyRelease>", change_direction)
+window.bind("<KeyPress>", change_direction)
 window.mainloop()
