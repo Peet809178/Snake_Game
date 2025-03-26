@@ -1,5 +1,6 @@
 import tkinter
 import random
+import pygame
 
 ROWS = 25
 COLS = 25
