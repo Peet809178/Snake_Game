@@ -7,3 +7,6 @@
 _Based on the coding tutorial by @ImKennyYip_
 
 **Watch the tutorial here:** https://youtu.be/FtqWCo1_I4g
+
+**pygame repo is REQUIRED:**
+**To install Pygame on Windows, first ensure you have Python installed, then open a command prompt and use the pip install pygame command.**
