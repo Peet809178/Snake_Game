@@ -1,7 +1,20 @@
 import tkinter
 import random
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1' #hide pygame support prompt
 import pygame
 
+#music
+pygame.init()
+pygame.mixer.music.load('slither.mp3')
+pygame.mixer.music.play(loops=-1, start=2)
+
+#sound effects
+collect = pygame.mixer.Sound('collect.mp3')
+crash = pygame.mixer.Sound('crash.mp3')
+gameover = pygame.mixer.Sound('gameover.wav')
+
+#constants
 ROWS = 25
 COLS = 25
 TILE_SIZE = 25
@@ -35,13 +48,14 @@ window_y = int((screen_height/2) - (window_height/2))
 window.geometry(f"{window_width}x{window_height}+{window_x}+{window_y}")
 
 #initialize game
-snake = Tile(5*TILE_SIZE,5*TILE_SIZE) #single tile, snakes head
-food = Tile(10*TILE_SIZE,10*TILE_SIZE)
+
+snake = Tile(random.randint(0, COLS-1) * TILE_SIZE, random.randint(0, ROWS-1) * TILE_SIZE)
+food = Tile(random.randint(0, COLS-1) * TILE_SIZE, random.randint(0, ROWS-1) * TILE_SIZE)
 snake_body = []
 velocityX = 0
 velocityY = 0
 game_over = False
-score = 0
+fruit = 0
 
 def change_direction(e): #event
     
@@ -67,17 +81,19 @@ def change_direction(e): #event
         velocityY = 0
 
 def move():
-    global snake, food, snake_body, game_over, score
+    global snake, food, snake_body, game_over, fruit
     if (game_over):
         return
     
     if (snake.x < 0 or snake.x >= WINDOW_WIDTH or snake.y < 0 or snake.y >= WINDOW_HEIGHT):
         game_over = True
+        crash.play()
         return
     
     for tile in snake_body:
         if (snake.x == tile.x and snake.y == tile.y):
             game_over = True
+            crash.play()
             return
         
     #collision
@@ -85,7 +101,8 @@ def move():
         snake_body.append(Tile(snake.x, snake.y))
         food.x = random.randint(0, COLS-1) * TILE_SIZE
         food.y = random.randint(0, ROWS-1) * TILE_SIZE
-        score += 1
+        fruit += 1
+        collect.play()
 
     #update snake body
     for i in range(len(snake_body)-1, -1, -1):
@@ -101,30 +118,54 @@ def move():
     snake.x += velocityX * TILE_SIZE
     snake.y += velocityY * TILE_SIZE
 
+def restart_game(e):  # Optional event parameter for key binding
+    global snake, food, snake_body, velocityX, velocityY, game_over, fruit
+    # Reset game variables
+    snake = Tile(random.randint(0, COLS-1) * TILE_SIZE, random.randint(0, ROWS-1) * TILE_SIZE)
+    food = Tile(random.randint(0, COLS-1) * TILE_SIZE, random.randint(0, ROWS-1) * TILE_SIZE)
+    snake_body = []
+    velocityX = 0
+    velocityY = 0
+    game_over = False
+    fruit = 0
+    pygame.mixer.music.play(loops=-1, start=2)  # Restart background music
+    window.after_cancel(window.timer)  # Cancel the previous timer
+    draw()  # Redraw the game
 
 def draw():
-    global snake, food, snake_body, game_over, score
+    global snake, food, snake_body, game_over, fruit
 
     move()
     canvas.delete("all")
 
-    #draw food
+    # Draw food
     canvas.create_rectangle(food.x, food.y, food.x + TILE_SIZE, food.y + TILE_SIZE, fill="red")
 
-    #draw snake
+    # Draw snake
     canvas.create_rectangle(snake.x, snake.y, snake.x + TILE_SIZE, snake.y + TILE_SIZE, fill="lime green")
 
     for tile in snake_body:
         canvas.create_rectangle(tile.x, tile.y, tile.x + TILE_SIZE, tile.y + TILE_SIZE, fill="lime green")
 
-    window.after(100, draw) #100ms = 1/10 second, 10 frames per second
-
-    if (game_over):
-        canvas.create_text(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, font = "arial 20", text = f"Game Over: {score}", fill="white")
+    if game_over:
+        # Display game over text
+        canvas.create_text(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 50, font="arial 60", text="GAME OVER", fill="white")
+        canvas.create_text(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 20, font="arial 20", text=f"Fruit: {fruit}", fill="white")
+        canvas.create_text(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 70, font="arial 20", text="Press any key to restart.", fill="white")
+        pygame.mixer.music.stop()
     else:
-        canvas.create_text(WINDOW_WIDTH/2, 30, font = "arial 16", text = f"Score: {score}", fill="white")
+        # Display fruit
+        canvas.create_text(WINDOW_WIDTH / 2, 30, font="arial 20", text=f"Fruit: {fruit}", fill="white")
+
+    window.after(100, draw)  # 100ms = 1/10 second, 10 frames per second
 
 draw()
 
-window.bind("<KeyPress>", change_direction)
+def handle_keypress(e):
+    if game_over:
+        restart_game(e)
+    else:
+        change_direction(e)
+
+window.bind("<KeyPress>", handle_keypress)
 window.mainloop()
