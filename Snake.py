@@ -12,7 +12,6 @@ pygame.mixer.music.play(loops=-1, start=2)
 #sound effects
 collect = pygame.mixer.Sound('collect.mp3')
 crash = pygame.mixer.Sound('crash.mp3')
-gameover = pygame.mixer.Sound('gameover.wav')
 
 #constants
 ROWS = 25
